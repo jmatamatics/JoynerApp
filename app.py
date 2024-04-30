@@ -1,88 +1,54 @@
-from langchain_openai import OpenAIEmbeddings
-from langchain_community.document_loaders import PyPDFDirectoryLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_openai import ChatOpenAI
-from langchain_community.vectorstores import FAISS
-from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationalRetrievalChain
-from langchain_community.llms import Ollama
+
 from dotenv import load_dotenv
 import streamlit as st
+from streamlit_pdf_viewer import pdf_viewer
 import os
 import time
-
-
-    
+import shutil
+from agents import *
 
 load_dotenv()
 api_key = os.environ.get("OPENAI_API_KEY")
-memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, output_key='answer')
-
-
-def load_pdfs(pdf_docs):
-    folder_path = 'data'
-    os.makedirs(folder_path, exist_ok=True) 
-    for pdf in pdf_docs:
-        file_path =os.path.join(folder_path, pdf.name)
-        # Open a file in binary write mode
-        with open(file_path, "wb") as f:
-            # Write the contents of the uploaded file to the new file.
-            f.write(pdf.getbuffer())
-        loader=PyPDFDirectoryLoader("./data")
-        documents = loader.load()
-    return  documents
 
 
 
-
-def chunks(text):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=20)
-    chunks = text_splitter.split_documents(text)
-    return chunks
+st.image('joyner.jpeg')
+st.title('Joyner & Associates')
 
 
-
-def index(text_chunks):
-    embeddings = OpenAIEmbeddings()
-    vector = FAISS.from_documents(text_chunks, embeddings)
-    vector.save_local("faiss_index")
-
-
-
-def pdf_gpt(human_input):
-    llm = ChatOpenAI(model='gpt-4')
-    embeddings = OpenAIEmbeddings()
-    vector = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
-    rel_docs= vector.similarity_search(human_input, k=4)
-    retriever = vector.as_retriever()
-    gpt = ConversationalRetrievalChain.from_llm(
-        llm, retriever, memory=memory, verbose=True,return_source_documents=False
-    )
-    result = gpt.invoke({"question": human_input})
-    return result["answer"], rel_docs   #,result["source_documents"], met
-
-
-
-
-st.title('PDF RAG LLM')
 st.header('',divider='rainbow')
 
-
-
-
 with st.sidebar:
-    st.title("PDF Loader:")
-    pdf_docs = st.file_uploader("Upload your PDF Files", accept_multiple_files=True)
+    st.title("PDF Loader")
+    pdf_docs = st.file_uploader("", accept_multiple_files=True,label_visibility="collapsed")
+    if pdf_docs is not None:
+        for i, pdf in enumerate(pdf_docs):
+            # turn into bytes
+            bytes_data = pdf.read()
+            # Pass a unique key for each widget
+            pdf_viewer(bytes_data,width = 100, height =122, pages_to_render =[1], key=f"pdf_viewer_{i}")
     if st.button("Submit"):
         with st.spinner("Embedding..."):
             docs = load_pdfs(pdf_docs)
             doc_chunks = chunks(docs)
             index(doc_chunks)
             st.success("Ready to answer queries!")
+    st.header('',divider='rainbow')
+
+    if st.button("Delete Uploaded Files"):
+        # Remove the directory and all its contents
+        try:
+            shutil.rmtree('./data')
+            print('')
+            shutil.rmtree('./faiss_index')
+            print('')
+            shutil.rmtree('./data')
+            st.success("Files deleted!")
+        except Exception as error:
+            st.success("Files deleted!")
 
 
-
-
+## code adapted from streamlit.io ##
 #make itrator for st.write_stream.
 def stream_data():
     for word in response.split():
@@ -100,7 +66,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # Accept user input
-if prompt := st.chat_input("What is up?"):
+if prompt := st.chat_input("What's your question?"):
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
     # Display user message in chat message container
@@ -119,11 +85,16 @@ if prompt := st.chat_input("What is up?"):
 
    # With a streamlit expander
     with st.expander("Related Documents"):
+        if "i'm sorry" or "assist" or "please" not in response.lower():
         # Find the relevant chunks
-        for i, doc in enumerate(rel_docs):
-            st.write('**Document**',i+1) #bold lettering
-            source = rel_docs[i].metadata['source'][5:] # take out folder name from string
-            page = rel_docs[i].metadata['page'] +1 #counts starting at zero
-            st.write(f" :book: **page {page} of** ***{source}***") 
-            st.write(rel_docs[i].page_content)
-            st.write("--------------------------------")
+            for i, doc in enumerate(rel_docs):
+                st.write('**Document**',i+1) #bold lettering
+                source = rel_docs[i].metadata['source'][5:] # take out folder name from string
+                page = rel_docs[i].metadata['page'] +1 #counts starting at zero
+                st.write(f" :book: **page {page} of** ***{source}***") 
+                #st.write('**Relevant Text/Chunk:**',rel_docs[i].page_content)
+                try:
+                    pdf_viewer(rel_docs[i].metadata['source'],width = 670, height =790, pages_to_render =[page], key=f"pdf_viewer_{i+100}")
+                except Exception as error:
+                    stream_data('Please upload files my lover.')
+                st.write("--------------------------------" )
