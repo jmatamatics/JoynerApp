@@ -12,7 +12,7 @@ import os
 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, output_key='answer')
 
 from langchain_community.document_loaders import PyMuPDFLoader
-import pytesseract
+#import pytesseract
 from PIL import Image
 import fitz  # PyMuPDF
 def image_to_text(file_path):
