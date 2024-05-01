@@ -36,6 +36,7 @@ with st.sidebar:
             st.success("Ready to answer queries!")
     st.header('',divider='rainbow')
 
+del ="""
     if st.button("Delete Uploaded Files"):
         # Remove the directory and all its contents
         try:
@@ -48,7 +49,7 @@ with st.sidebar:
         except Exception as error:
             st.success("Files deleted!")
 
-
+"""
 ## code adapted from streamlit.io ##
 #make itrator for st.write_stream.
 def stream_data():

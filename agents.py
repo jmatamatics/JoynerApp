@@ -37,7 +37,7 @@ def load_pdfs(pdf_docs):
         #documents = documents.extend(text)
 
 
-    loader=PyPDFDirectoryLoader("./data") #, extract_images=True)
+    loader=PyPDFDirectoryLoader("./data", extract_images=True)
     documents = loader.load()
     #loader=PyMuPDFLoader(file_path, extract_images =True)    
     #documents = documents.extend(loader.load())
