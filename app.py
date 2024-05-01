@@ -36,7 +36,7 @@ with st.sidebar:
             st.success("Ready to answer queries!")
     st.header('',divider='rainbow')
 
-del ="""
+delll ="""
     if st.button("Delete Uploaded Files"):
         # Remove the directory and all its contents
         try:
