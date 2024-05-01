@@ -59,6 +59,12 @@ def index(text_chunks):
     vector.save_local("faiss_index")
 
 
+def add_(text_chunks):
+    embeddings = OpenAIEmbeddings()
+    vector = FAISS.load_local("faiss_index", OpenAIEmbeddings(), allow_dangerous_deserialization=True)
+    vector.add_documents(text_chunks)
+    vector.save_local("faiss_index")
+
 
 def pdf_gpt(human_input):
     llm = ChatOpenAI(model='gpt-4')

@@ -31,7 +31,8 @@ with st.sidebar:
         with st.spinner("Embedding..."):
             docs = load_pdfs(pdf_docs)
             doc_chunks = chunks(docs)
-            index(doc_chunks)
+            add_(doc_chunks)
+            #index(doc_chunks)
             st.success("Ready to answer queries!")
     st.header('',divider='rainbow')
 
