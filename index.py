@@ -58,4 +58,19 @@ def add_excel(file_path):
     doc_chunks = chunks(docs)
     add_(doc_chunks)
 
-add_index("./new_data")
+#add_index("./new_data")
+
+import fitz  # PyMuPDF
+import sys
+
+def pdf_needs_ocr(pdf_path):
+    doc = fitz.open(pdf_path)
+    for page_num in range(len(doc)):
+        page = doc.load_page(page_num)
+        text = page.get_text("text")
+        if text.strip():  # If there's any text on the page
+            return False            
+    return True
+
+
+pdf_needs_ocr('./data/HRPolicies12-08-23.pdf')

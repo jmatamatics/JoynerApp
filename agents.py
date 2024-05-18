@@ -15,6 +15,9 @@ from langchain_community.document_loaders import PyMuPDFLoader
 #import pytesseract
 from PIL import Image
 import fitz  # PyMuPDF
+import sys
+
+
 def image_to_text(file_path):
     text =''
     doc = fitz.open(file_path)
@@ -25,6 +28,19 @@ def image_to_text(file_path):
         #doc.close()
     return text
 
+
+
+
+def pdf_needs_ocr(pdf_path):
+    doc = fitz.open(pdf_path)
+    for page_num in range(len(doc)):
+        page = doc.load_page(page_num)
+        text = page.get_text("text")
+        if text.strip():  # If there's any text on the page
+            return False            
+    return True
+
+
 def load_pdfs(pdf_docs):
     folder_path = 'data'
     os.makedirs(folder_path, exist_ok=True)
@@ -33,15 +49,21 @@ def load_pdfs(pdf_docs):
         file_path =os.path.join(folder_path, pdf.name)
         with open(file_path, "wb") as f:
             f.write(pdf.getbuffer())
-        #documents += image_to_text(file_path)       
-        #documents = documents.extend(text)
-
-
+        # Check if the saved PDF needs OCR
+        if pdf_needs_ocr(file_path):
+            # Move the PDF to the OCR folder
+            ocr_folder_path = os.path.join("needs_ocr", pdf.name)
+            move(file_path, ocr_file_path)
     loader=PyPDFDirectoryLoader("./data")#, extract_images=True)
     documents = loader.load()
-    #loader=PyMuPDFLoader(file_path, extract_images =True)    
-    #documents = documents.extend(loader.load())
     return  documents
+
+
+def load_ocr_pdfs(folder = "./needs_ocr"):
+    loader=PyPDFDirectoryLoader(folder, extract_images=True)
+    documents = loader.load()
+    return  documents
+
 
 
 def chunks(text):

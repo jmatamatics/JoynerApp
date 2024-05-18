@@ -32,7 +32,10 @@ with st.sidebar:
             docs = load_pdfs(pdf_docs)
             doc_chunks = chunks(docs)
             add_(doc_chunks)
-            #index(doc_chunks)
+            if os.path.exists('./needs_orc'):
+                docs = load_ocr_pdfs()
+                doc_chunks = chunks(docs)
+                add_(doc_chunks)
             st.success("Ready to answer queries!")
     st.header('',divider='rainbow')
 
