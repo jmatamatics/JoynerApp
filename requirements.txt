@@ -11,4 +11,5 @@ watchdog
 pypdf
 huggingface_hub
 rapidocr-onnxruntime
+
 pymupdf
