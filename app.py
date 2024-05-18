@@ -13,7 +13,7 @@ api_key = os.environ.get("OPENAI_API_KEY")
 
 
 st.image('Joyner.jpg')
-st.title('Joyner & Associates')
+st.title('Join Joyner & Associates LLC')
 
 
 st.header('',divider='rainbow')
